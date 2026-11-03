@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Level } from "@/lib/types";
 import { LEVELS } from "@/lib/levels";
 import { getRank } from "@/lib/ranks";
 import { sfx } from "@/lib/sound";
+import { submitScoreToSheet, GOOGLE_SHEETS_WEB_APP_URL } from "@/lib/sheets";
 import Confetti from "./Confetti";
 import type { PlayResult } from "./Play";
 import { FlameIcon, Mascot, StarIcon } from "./art";
 
 type Props = {
+  playerName: string;
   level: Level;
   result: PlayResult;
   xpBefore: number;
@@ -22,6 +24,7 @@ type Props = {
 };
 
 export default function Result({
+  playerName,
   level,
   result,
   xpBefore,
@@ -32,10 +35,44 @@ export default function Result({
   onNext,
   onMap,
 }: Props) {
+  const [sheetStatus, setSheetStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
+  const submittedRef = useRef(false);
+
+  const sendScore = useCallback(async () => {
+    setSheetStatus("saving");
+    const scoreVal = Math.round((result.correct / (result.total || 1)) * 100);
+    const res = await submitScoreToSheet({
+      nama: playerName,
+      levelId: level.id,
+      levelName: level.name,
+      correct: result.correct,
+      mistakes: result.mistakes,
+      total: result.total,
+      score: scoreVal,
+      stars: result.stars,
+      passed: result.passed,
+      xp: result.xp,
+      bestStreak: result.bestStreak,
+    });
+
+    if (res.success) {
+      setSheetStatus("saved");
+    } else {
+      setSheetStatus("error");
+    }
+  }, [playerName, level, result]);
+
   useEffect(() => {
     if (result.passed) sfx.win();
     else sfx.lose();
-  }, [result.passed]);
+
+    if (!submittedRef.current) {
+      submittedRef.current = true;
+      sendScore();
+    }
+  }, [result.passed, sendScore]);
 
   const before = getRank(xpBefore);
   const after = getRank(xpAfter);
@@ -126,6 +163,32 @@ export default function Result({
             <p className="font-display text-3xl">{after.cur.name}</p>
           </div>
         )}
+
+        {/* Status Pengiriman ke Spreadsheet */}
+        <div className="mx-auto mt-4 min-h-[24px]">
+          {sheetStatus === "saving" && (
+            <p className="animate-pulse text-xs font-semibold text-ink/60">
+              ⏳ Menyimpan nilai ke Spreadsheet...
+            </p>
+          )}
+          {sheetStatus === "saved" && (
+            <p className="animate-pop flex items-center justify-center gap-1 text-xs font-bold text-fern">
+              <span>✓</span> Nilai otomatis tercatat di Spreadsheet
+            </p>
+          )}
+          {sheetStatus === "error" && (
+            <p className="text-xs font-semibold text-amber-700">
+              ⚠️ Gagal mengirim ke Spreadsheet{" "}
+              <button
+                type="button"
+                onClick={() => sendScore()}
+                className="ml-1 font-bold underline hover:text-amber-900"
+              >
+                Coba lagi
+              </button>
+            </p>
+          )}
+        </div>
 
         <div className="mx-auto mt-6 flex max-w-md flex-col gap-3">
           {result.passed ? (

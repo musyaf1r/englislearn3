@@ -202,6 +202,7 @@ export default function Game() {
       screen.result.passed && LEVELS.some((l) => l.id === level.id + 1);
     return (
       <Result
+        playerName={profile.name}
         level={level}
         result={screen.result}
         xpBefore={profile.xp - screen.result.xp}
