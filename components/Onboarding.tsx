@@ -24,25 +24,37 @@ type Props = {
 };
 
 const STEP_TITLES = [
-  "Apa itu kata tanya?",
-  "Kenali semua kata tanya",
+  "Apa itu kata tanya & Past Tense?",
+  "Kenali kata tanya & Did",
   "Cara bermain",
   "Coba satu soal",
 ];
 
 const EXAMPLES = [
-  { word: "What", sentence: "What do you bring?", id: "Kamu membawa apa?" },
-  { word: "Where", sentence: "Where is the beach?", id: "Di mana pantainya?" },
-  { word: "Who", sentence: "Who goes with you?", id: "Siapa yang pergi denganmu?" },
+  {
+    word: "What",
+    sentence: "What did you do yesterday?",
+    id: "Apa yang kamu lakukan kemarin? (Past Tense)",
+  },
+  {
+    word: "Where",
+    sentence: "Where did you go on holiday?",
+    id: "Ke mana kamu pergi saat liburan?",
+  },
+  {
+    word: "Who",
+    sentence: "Who went with you?",
+    id: "Siapa yang pergi denganmu? (went = lampau dari go)",
+  },
 ];
 
 const PRACTICE: ChoiceQ = {
   type: "choice",
-  prompt: "___ do you do at the beach?",
-  reply: "I build a sandcastle.",
-  options: ["What", "Where", "Who"],
-  answer: "What",
-  hint: "Membuat istana pasir adalah kegiatan, jadi kita bertanya tentang kegiatan.",
+  prompt: "Where ___ you go on holiday yesterday?",
+  reply: "I went to Bali.",
+  options: ["did", "do", "are"],
+  answer: "did",
+  hint: "Karena menanyakan masa lalu (yesterday), gunakan kata bantu lampau 'did'.",
 };
 
 function Sticker({ word, size = 44 }: { word: string; size?: number }) {
@@ -71,8 +83,8 @@ export default function Onboarding({ name, avatar, onDone }: Props) {
   const last = STEP_TITLES.length - 1;
 
   const bubble = [
-    `Halo, ${name}! Kata tanya dipakai untuk bertanya. Dalam bahasa Inggris namanya question words.`,
-    "Ada 10 kata tanya. Setiap kata punya warna dan bentuk sendiri supaya mudah diingat. Tekan kotaknya untuk mendengar suaranya.",
+    `Halo, ${name}! Di sini kita belajar kata tanya (Question Words) dan cara menceritakan liburan di masa lampau (Past Tense).`,
+    "Setiap kata tanya dan kata bantu lampau (Did) punya warna & bentuk sendiri. Tekan kotaknya untuk mendengar suaranya.",
     "Ada tiga jenis soal. Kamu juga punya nyawa dan bisa mengumpulkan bintang.",
     practice === null
       ? "Sekarang coba dulu. Di sini nyawamu tidak akan berkurang."
@@ -140,6 +152,19 @@ export default function Onboarding({ name, avatar, onDone }: Props) {
                 <SpeakButton text={ex.sentence} label={`Dengar ${ex.sentence}`} />
               </div>
             ))}
+
+            <div className="rounded-2xl border border-sun/40 bg-[#fff8e7] p-4 text-left">
+              <p className="font-display text-xl text-ink">💡 Materi Past Tense (Masa Lampau)</p>
+              <p className="mt-1 text-sm font-bold text-ink/80 leading-relaxed sm:text-base">
+                Saat menanyakan liburan atau hal yang sudah terjadi (kemarin/minggu lalu):
+              </p>
+              <ul className="mt-2 list-disc list-inside space-y-1 text-sm text-ink/80 font-bold">
+                <li>Gunakan kata bantu <span className="rounded bg-white px-1.5 py-0.5 border border-ink/15 text-fern font-extrabold">did</span> untuk kalimat tanya: <em>Where <u>did</u> you go?</em></li>
+                <li>Setelah kata <em>did</em>, kata kerja kembali ke bentuk dasar (contoh: <em>did you <u>go</u></em>, bukan <em>did you went</em>).</li>
+                <li>Pada kalimat jawaban, gunakan kata kerja lampau (contoh: <em>I <u>went</u> to Bali</em>, <em>I <u>built</u> a sandcastle</em>).</li>
+              </ul>
+            </div>
+
             <p className="px-1 text-center text-lg font-bold">
               Kata pertama di setiap pertanyaan itulah kata tanyanya.
             </p>

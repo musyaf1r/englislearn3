@@ -26,6 +26,7 @@ const TABLE: Record<string, WordStyle> = {
   whose: { bg: "#F4D4CE", shape: "heart" },
   "how many": { bg: "#CDE9EF", shape: "plus" },
   "how much": { bg: "#EADCC8", shape: "octagon" },
+  did: { bg: "#FCE7C8", shape: "hexagon" },
 };
 
 export const NEUTRAL = "#FFFFFF";
