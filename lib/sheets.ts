@@ -20,7 +20,7 @@ export const GOOGLE_SHEETS_WEB_APP_URL =
 
 export async function submitScoreToSheet(
   data: ScoreData
-): Promise<{ success: boolean; message?: string }> {
+): Promise<{ success: boolean; unverified?: boolean; message?: string }> {
   const url = GOOGLE_SHEETS_WEB_APP_URL;
 
   // Format data yang akan dikirim ke Spreadsheet
@@ -50,11 +50,13 @@ export async function submitScoreToSheet(
       body: JSON.stringify(payload),
     });
 
-    if (apiRes.ok) {
-      const resJson = await apiRes.json();
-      if (resJson.success) {
-        return { success: true };
-      }
+    if (apiRes.status !== 404 && apiRes.status !== 405) {
+      const resJson = await apiRes.json().catch(() => null);
+      if (apiRes.ok && resJson?.success) return { success: true };
+      return {
+        success: false,
+        message: resJson?.error || "Server gagal mencatat nilai ke Spreadsheet.",
+      };
     }
   } catch {
     // Abaikan jika route internal gagal atau aplikasi di-export statis (GitHub Pages)
@@ -81,7 +83,11 @@ export async function submitScoreToSheet(
       body: JSON.stringify(payload),
     });
 
-    return { success: true };
+    return {
+      success: false,
+      unverified: true,
+      message: "Permintaan dikirim, tetapi hasilnya tidak dapat diverifikasi dari browser.",
+    };
   } catch (err) {
     console.error("Gagal mengirim nilai ke Google Sheets:", err);
     return { success: false, message: String(err) };

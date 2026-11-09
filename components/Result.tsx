@@ -5,7 +5,7 @@ import type { Level } from "@/lib/types";
 import { LEVELS } from "@/lib/levels";
 import { getRank } from "@/lib/ranks";
 import { sfx } from "@/lib/sound";
-import { submitScoreToSheet, GOOGLE_SHEETS_WEB_APP_URL } from "@/lib/sheets";
+import { submitScoreToSheet } from "@/lib/sheets";
 import Confetti from "./Confetti";
 import type { PlayResult } from "./Play";
 import { FlameIcon, Mascot, StarIcon } from "./art";
@@ -36,8 +36,9 @@ export default function Result({
   onMap,
 }: Props) {
   const [sheetStatus, setSheetStatus] = useState<
-    "idle" | "saving" | "saved" | "error"
+    "idle" | "saving" | "saved" | "unverified" | "error"
   >("idle");
+  const [sheetMessage, setSheetMessage] = useState("");
   const submittedRef = useRef(false);
 
   const sendScore = useCallback(async () => {
@@ -59,9 +60,12 @@ export default function Result({
 
     if (res.success) {
       setSheetStatus("saved");
+    } else if (res.unverified) {
+      setSheetStatus("unverified");
     } else {
       setSheetStatus("error");
     }
+    setSheetMessage(res.message || "");
   }, [playerName, level, result]);
 
   useEffect(() => {
@@ -176,9 +180,14 @@ export default function Result({
               <span>✓</span> Nilai otomatis tercatat di Spreadsheet
             </p>
           )}
+          {sheetStatus === "unverified" && (
+            <p className="text-xs font-semibold text-amber-700">
+              {sheetMessage} Periksa Spreadsheet untuk memastikan.
+            </p>
+          )}
           {sheetStatus === "error" && (
             <p className="text-xs font-semibold text-amber-700">
-              ⚠️ Gagal mengirim ke Spreadsheet{" "}
+              ⚠️ {sheetMessage || "Gagal mengirim ke Spreadsheet."}{" "}
               <button
                 type="button"
                 onClick={() => sendScore()}
